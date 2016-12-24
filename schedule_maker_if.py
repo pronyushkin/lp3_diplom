@@ -1,22 +1,20 @@
 '''Интерфейс логики "Составление расписания"'''
 #import schedule_maker
 
-import schedule_maker
+import schedule_maker as schm
 
 def cmd_add_user(login):
     '''
     Добавление пользователя.
-    Только добавляем пользователя в базу.
     '''
-    #schedule_db.add_user(login)
-    pass
+    return schm.schedule_maker.add_user(login)
 
 
 def cmd_del_user(login):
     '''Удаление пользователя
     Удаляем из базы пользователя и все назначенные ему дежурства.
     '''
-    pass
+    return schm.schedule_maker.del_user(login)
 
 
 def cmd_try_schedule():
@@ -42,24 +40,33 @@ def cmd_show_schedule(schedule_date):
     Пока принимаем дату в формате число вида YYYYMM например 201611
     В дальнейшем можно переделать на желаемый формат и приобразовывать к этому виду
     '''
-    sched = str(schedule_maker.schedule_maker.schedules.get(schedule_date,{}))
-    return sched
+    sched = schm.schedule_maker.schedules.get(schedule_date,{})
+    return str(sched)
+
 
 if __name__ == '__main__':
     '''тестовый прогон'''
-    #cmd_add_user('вася')
-    #cmd_add_user('петя')
-    #cmd_add_user('удаляка')
-    #cmd_add_user('леша')
-    #cmd_add_user('ваня')
-    #cmd_add_user('варя')
-    #cmd_add_user('поля')
-    #cmd_add_user('коля')
-    #cmd_add_user('леня')
+    #успешное добавление пользователей
+    print(cmd_add_user('вася'))
+    print(cmd_add_user('петя'))
+    print(cmd_add_user('удаляка'))
+    print(cmd_add_user('леша'))
+    print(cmd_add_user('ваня'))
+    print(cmd_add_user('варя'))
+    print(cmd_add_user('поля'))
+    print(cmd_add_user('коля'))
+    print(cmd_add_user('леня'))
+    print(schm.schedule_maker.users)
+    #неуспешная попытка добавления существующего пользователя
+    print(cmd_add_user('леня'))
+    print(schm.schedule_maker.users)
     #print(cmd_try_schedule())
-    #cmd_del_user('удаляка')
+    #удаление пользователя
+    cmd_del_user('удаляка')
+    print(schm.schedule_maker.users)
     #print(cmd_make_schedule())
     #print(cmd_show_schedule(schedule_date))
+    #печать имеющихся словарей
     print(cmd_show_schedule(201610))
     print(cmd_show_schedule(201611))
     print(cmd_show_schedule(201612))

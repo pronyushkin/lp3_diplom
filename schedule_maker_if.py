@@ -11,7 +11,8 @@ def cmd_add_user(login):
 
 
 def cmd_del_user(login):
-    '''Удаление пользователя
+    '''
+    Удаление пользователя
     Удаляем из базы пользователя и все назначенные ему дежурства.
     '''
     return schm.schedule_maker.del_user(login)
@@ -23,7 +24,8 @@ def cmd_try_schedule():
     И возвращаем его в требуемом виде.
     Результат не сохраняется.
     '''
-    pass
+    sched = schm.schedule_maker.make_schedule()
+    return str(sched[1])
 
 
 def cmd_make_schedule():
@@ -32,7 +34,8 @@ def cmd_make_schedule():
     Сохраняем результат в базе.
     Возвращаем информацию о расписании.
     '''
-    pass
+    sched_data = schm.schedule_maker.make_schedule_and_save()
+    return str(sched_data)
 
 def cmd_show_schedule(schedule_date):
     '''
@@ -46,6 +49,8 @@ def cmd_show_schedule(schedule_date):
 
 if __name__ == '__main__':
     '''тестовый прогон'''
+    #исходное состояние расписания
+    print('show201612', cmd_show_schedule(201612))
     #успешное добавление пользователей
     print(cmd_add_user('вася'))
     print(cmd_add_user('петя'))
@@ -59,15 +64,14 @@ if __name__ == '__main__':
     print(schm.schedule_maker.users)
     #неуспешная попытка добавления существующего пользователя
     print(cmd_add_user('леня'))
-    print(schm.schedule_maker.users)
-    #print(cmd_try_schedule())
+    print('users', schm.schedule_maker.users)
+    print('try',cmd_try_schedule())
     #удаление пользователя
     cmd_del_user('удаляка')
-    print(schm.schedule_maker.users)
-    #print(cmd_make_schedule())
-    #print(cmd_show_schedule(schedule_date))
+    print('users',schm.schedule_maker.users)
+    print('make', cmd_make_schedule())
     #печать имеющихся словарей
-    print(cmd_show_schedule(201610))
-    print(cmd_show_schedule(201611))
-    print(cmd_show_schedule(201612))
+    print('show201610', cmd_show_schedule(201610))
+    print('show201611', cmd_show_schedule(201611))
+    print('show201612', cmd_show_schedule(201612))
 

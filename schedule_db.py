@@ -53,12 +53,27 @@ def add_user(login):
     except:
         return False
 
+
 def del_user(login):
     '''Удаление пользователя из базы'''
     #при ошибке вернуть False
     return True
 
-#def add_duty(login, date):
-#    '''Назначить пользователя на держурство'''
-#    pass
 
+def update_sched(sched):
+    '''Обновить расписание в базе'''
+    return True
+
+
+def get_users():
+    '''Получить текущий список пользователей'''
+    return ['user1','user2']
+
+
+def get_schedules():
+    '''Получить текущий набор расписаний'''
+    return { 
+            201612:{26:'user1', 27:'user2',28:'user1', 29:'user2', 30:'user1'},
+            201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'}
+    }
+    

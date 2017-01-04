@@ -51,7 +51,11 @@ def remove_user(vlogin):
 
 def get_users():
     '''Получить текущий список пользователей'''
-    return User.query.filter_by(isdeleted=False).all()
+    raw_users = User.query.filter_by(isdeleted=False).all()
+    logins = []
+    for raw_user in raw_users:
+        logins.append(raw_user.login)
+    return logins
 
 
 def add_user(login):

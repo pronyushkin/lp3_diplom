@@ -51,10 +51,10 @@ def remove_user(vlogin):
 
 def get_users():
     '''Получить текущий список пользователей'''
-    raw_users = User.query.filter_by(isdeleted=False).all()
+    logins_as_tuples = db_session.query(User.login).filter_by(isdeleted=False).all()
     logins = []
-    for raw_user in raw_users:
-        logins.append(raw_user.login)
+    for login in logins_as_tuples:
+        logins.append(login[0])
     return logins
 
 

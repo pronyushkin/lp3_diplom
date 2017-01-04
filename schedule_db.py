@@ -103,6 +103,8 @@ def update_sched(sched):
 
 def get_schedules():
     '''Получить текущий набор расписаний'''
+    add_user('user1')
+    add_user('user2')
     return { 
             201612:{26:'user1', 27:'user2',28:'user1', 29:'user2', 30:'user1'},
             201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'}

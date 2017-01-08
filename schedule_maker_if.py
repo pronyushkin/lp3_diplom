@@ -43,14 +43,17 @@ def cmd_show_schedule(schedule_date):
     Пока принимаем дату в формате число вида YYYYMM например 201611
     В дальнейшем можно переделать на желаемый формат и приобразовывать к этому виду
     '''
-    sched = schm.schedule_maker.schedules.get(schedule_date,{})
+    if schedule_date:
+        sched = schm.schedule_maker.schedules.get(schedule_date,{})
+    else:
+        sched = schm.schedule_maker.schedules    
     return str(sched)
 
 
 if __name__ == '__main__':
     '''тестовый прогон'''
     #исходное состояние расписания
-    print('show201612', cmd_show_schedule(201612))
+    print('showAll', cmd_show_schedule(None))
     #успешное добавление пользователей
     print(cmd_add_user('вася'))
     print(cmd_add_user('петя'))
@@ -70,8 +73,7 @@ if __name__ == '__main__':
     cmd_del_user('удаляка')
     print('users',schm.schedule_maker.users)
     print('make', cmd_make_schedule())
+    print('show201701', cmd_show_schedule(201701))
     #печать имеющихся словарей
-    print('show201610', cmd_show_schedule(201610))
-    print('show201611', cmd_show_schedule(201611))
-    print('show201612', cmd_show_schedule(201612))
+    print('showAll', cmd_show_schedule(None))
 

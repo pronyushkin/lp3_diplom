@@ -9,6 +9,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import update
+import json
 
 
 engine = create_engine('sqlite:///sched.db')
@@ -31,6 +32,23 @@ class User(Base):
         return '<User {} {}>'.format(self.login, self.isdeleted)
 
 
+class Schedules(Base):
+    __tablename__ = 'schedules'
+    id = Column(Integer, primary_key=True)
+    month = Column(Integer, unique=True)
+    schedule = Column(Text)
+
+    def __init__(self, month, schedule='\{\}'):
+        self.month = month
+        self.schedule = schedule
+
+    def __repr__(self):
+        return '<Schedule {} {}>'.format(self.month, self.schedule)
+
+    def __str__(self):
+        return '({},{})'.format(self.month, self.schedule)
+
+
 #создаст базу если она не была создана
 Base.metadata.create_all(bind=engine)
 
@@ -47,6 +65,11 @@ def remove_user(vlogin):
     db_session.commit()
 
 
+def print_schedules(msg=''):
+    '''Напечатать все записи о расписаниях'''
+    print('print_schedules', msg, Schedules.query.all())
+
+
 #Интерфейс к базе
 
 def get_users():
@@ -61,6 +84,9 @@ def get_users():
 def add_user(login):
     '''Добавление пользователя в базу'''
     try:
+        #sqlalchemy сам экранирует символы
+        #login = login.remove("'")
+        #login = login.remove('"')
         u = User
         check_user = u.query.filter(User.login == login).first()
         if check_user:
@@ -77,6 +103,7 @@ def add_user(login):
         db_session.commit()
         return True
     except:
+        print('except in add_user')
         return False
 
 
@@ -93,25 +120,48 @@ def del_user(login):
                 return True
         return False
     except:
+        print('except in del_user')
         return False
 
 
 def update_sched(sched):
     '''Обновить расписание в базе'''
-    return True
+    assert( 2 == len(sched))
+    month, schedule = sched
+    schedule = json.JSONEncoder().encode(schedule)
+    try:
+        s = Schedules
+        check_sched = s.query.filter(Schedules.month == month).first()
+        if check_sched:
+            #расписание уже есть
+            check_sched.schedule = schedule
+            db_session.commit()
+        else:
+            new_sched= Schedules(month, schedule)
+            db_session.add(new_sched)
+            db_session.commit()
+        return True
+    except:
+        print('except in update_sched')
+        return False
 
 
 def get_schedules():
     '''Получить текущий набор расписаний'''
-    add_user('user1')
-    add_user('user2')
-    return { 
-            201612:{26:'user1', 27:'user2',28:'user1', 29:'user2', 30:'user1'},
-            201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'}
-    }
+    scheds = db_session.query(Schedules).all()
+    result = {}
+    for i in scheds:
+        obj = json.JSONDecoder().decode(i.schedule)
+        converted_obj = {}
+        for item in obj.items():
+            converted_obj[int(item[0])] = item[1]
+        result[i.month] = converted_obj
+    return result
 
 
-if __name__ == '__main__':
+#проверки
+def example_users():
+    '''Примеры работы с таблицей пользователей'''
     print(get_users())
     print(add_user('test_user1'))
     print(add_user('test_user1'))#False
@@ -132,3 +182,19 @@ if __name__ == '__main__':
     print(get_users())
     print_users('2 ok users')
 
+
+def example_schedules():
+    '''Примеры работы с таблицей расписаний'''
+    print(get_schedules())
+    update_sched((201611,{25:'user1', 28:'user2',29:'user1', 30:'user2'} ))
+    print(get_schedules())
+    update_sched((201611,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
+    print(get_schedules())
+    update_sched((201612,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
+    print(get_schedules())
+
+
+if __name__ == '__main__':
+    example_users()
+    print('-'*80)
+    example_schedules()

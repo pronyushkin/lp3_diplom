@@ -51,12 +51,13 @@ class ScheduleMaker:
         '''
         Ищем индекс пользователя который попадет в следующее расписание первым
         '''
-        #TODO вычислить с учетом предыдущего расписания, либо предыдущей версии этого
         prev = self.schedules.get(schedule_id,  None)
         last_user = None
         if prev:
             checkday = today - 1 
             while checkday:
+                if not (checkday in prev.keys()):
+                    break
                 if prev[checkday] in self.users:
                     last_user = prev[today - 1]
                     break

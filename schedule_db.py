@@ -12,10 +12,9 @@ from sqlalchemy import update
 import json
 
 
-engine = create_engine('sqlite:///sched.db')
-db_session = scoped_session(sessionmaker(bind=engine))
+engine = None
+db_session = None
 Base = declarative_base()
-Base.query = db_session.query_property()
 
 
 class User(Base):
@@ -48,10 +47,6 @@ class Schedules(Base):
     def __str__(self):
         return '({},{})'.format(self.month, self.schedule)
 
-
-#создаст базу если она не была создана
-Base.metadata.create_all(bind=engine)
-
 #Вспомогательные
 
 def print_users(msg=''):
@@ -71,6 +66,16 @@ def print_schedules(msg=''):
 
 
 #Интерфейс к базе
+def connect_db(dbname):
+    global engine
+    global db_session
+    global Base
+    engine = create_engine('sqlite:///{}.db'.format(dbname))
+    db_session = scoped_session(sessionmaker(bind=engine))
+    Base.query = db_session.query_property()
+    #создаст базу если она не была создана
+    Base.metadata.create_all(bind=engine)
+
 
 def get_users():
     '''Получить текущий список пользователей'''
@@ -195,6 +200,7 @@ def example_schedules():
 
 
 if __name__ == '__main__':
+    connect_db('test_sdb')
     example_users()
     print('-'*80)
     example_schedules()

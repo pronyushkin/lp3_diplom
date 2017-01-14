@@ -9,16 +9,17 @@ class ScheduleMaker:
     Класс реализующий логику составления расписаний
     '''
 
-    def __init__(self):
+    def __init__(self, dbname):
+        self.db = schedule_db.SchedulesDb(dbname)
         #исходное состояние получаем из базы
         #список пользователей
-        self.users = schedule_db.get_users()
+        self.users = self.db.get_users()
         #словарь имеющихся расписаний 
-        #   ключ - годмесяц, значение - словарь расписания на месяц
+        #   ключ - годмесяц(YYYYMM), значение - словарь расписания на месяц
         #где:
         # словарь расписания на месяц
         #   ключ - число, значение пользователь
-        self.schedules = schedule_db.get_schedules()
+        self.schedules = self.db.get_schedules()
 
 
     def add_user(self,login):
@@ -28,7 +29,7 @@ class ScheduleMaker:
         if login in self.users:
             return 'err user {} exists'.format(login)
 
-        if schedule_db.add_user(login):
+        if self.db.add_user(login):
             self.users.append(login)
             return 'ok'
         return 'err user {} addition failed'.format(login)
@@ -41,7 +42,7 @@ class ScheduleMaker:
         if login not in self.users:
             return 'err user {} does not exist'.format(login)
 
-        if schedule_db.del_user(login):
+        if self.db.del_user(login):
             self.users.remove(login)
             return 'ok'
         return 'err deleting user {} failed'.format(login)
@@ -87,15 +88,15 @@ class ScheduleMaker:
         return True
 
 
-    def make_schedule(self, schedule_date):
+    def make_schedule(self, schedule_id):
         '''
         Формируем расписание.
         Расписание формируется от текущего дня и до конца месяца, 
         при этом не рабочие дни не должны использоваться.
         Пример (201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'} )
         '''
-        if schedule_date:
-            dit = datetime.datetime(year=schedule_date//100, month=schedule_date%100, day = 1)
+        if schedule_id:
+            dit = datetime(year=schedule_id//100, month=schedule_id%100, day = 1)
         else:
             dit = datetime.today()
             schedule_id = dit.year * 100 + dit.month
@@ -112,12 +113,12 @@ class ScheduleMaker:
         return (schedule_id, sch_dates)
 
 
-    def make_schedule_and_save(self, schedule_date):
+    def make_schedule_and_save(self, schedule_id):
         '''
         Формируем расписание и сохраняем его.
         '''
-        sched = self.make_schedule(schedule_date)
-        if not schedule_db.update_sched(sched):
+        sched = self.make_schedule(schedule_id)
+        if not self.db.update_sched(sched):
             return {}
         self.schedules[sched[0]] = sched[1]
         return sched[1]
@@ -142,4 +143,8 @@ class ScheduleMaker:
         return 'ok'
 
 
-schedule_maker = ScheduleMaker()
+if __name__ == '__main__':
+    schedule_maker = ScheduleMaker('test_schedule_maker')
+    print(schedule_maker.add_user('testuser1'))
+    print(schedule_maker.add_user('testuser2'))
+    print(schedule_maker.make_schedule(201601))

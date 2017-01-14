@@ -2,6 +2,7 @@
 Формат базы
 Таблица пользователи             - users.
 Таблица Списоки расписаний       - schedules
+TODO убрать использование глобальных переменных (Base)
 '''
 #pip install sqlalchemy
 from sqlalchemy import create_engine
@@ -12,8 +13,6 @@ from sqlalchemy import update
 import json
 
 
-engine = None
-db_session = None
 Base = declarative_base()
 
 
@@ -47,160 +46,162 @@ class Schedules(Base):
     def __str__(self):
         return '({},{})'.format(self.month, self.schedule)
 
-#Вспомогательные
-
-def print_users(msg=''):
-    '''Напечатать все записи о пользователях'''
-    print('print_users', msg, User.query.all())
-
-
-def remove_user(vlogin):
-    '''Удаление записи пользователя из базы'''
-    User.query.filter_by(login=vlogin).delete()
-    db_session.commit()
-
-
-def print_schedules(msg=''):
-    '''Напечатать все записи о расписаниях'''
-    print('print_schedules', msg, Schedules.query.all())
-
-
-#Интерфейс к базе
-def connect_db(dbname):
-    global engine
-    global db_session
-    global Base
-    engine = create_engine('sqlite:///{}.db'.format(dbname))
-    db_session = scoped_session(sessionmaker(bind=engine))
-    Base.query = db_session.query_property()
-    #создаст базу если она не была создана
-    Base.metadata.create_all(bind=engine)
-
-
-def get_users():
-    '''Получить текущий список пользователей'''
-    logins_as_tuples = db_session.query(User.login).filter_by(isdeleted=False).all()
-    logins = []
-    for login in logins_as_tuples:
-        logins.append(login[0])
-    return logins
-
-
-def add_user(login):
-    '''Добавление пользователя в базу'''
-    try:
-        #sqlalchemy сам экранирует символы
-        #login = login.remove("'")
-        #login = login.remove('"')
-        u = User
-        check_user = u.query.filter(User.login == login).first()
-        if check_user:
-            #пользоваетель есть
-            if check_user.isdeleted:
-                check_user.isdeleted = False
-                db_session.commit()
-                return True
-            else:
-                return False
         
-        new_user = User(login, False)
-        db_session.add(new_user)
-        db_session.commit()
-        return True
-    except:
-        print('except in add_user')
-        return False
+class SchedulesDb:
+    engine = None
+    db_session = None
+    
+    def __init__(self, dbname):
+        #TODO убрать глобальную Base
+        global Base
+        self.engine = create_engine('sqlite:///{}.db'.format(dbname))
+        self.db_session = scoped_session(sessionmaker(bind=self.engine))
+        Base.query = self.db_session.query_property()
+        #создаст базу если она не была создана
+        Base.metadata.create_all(bind=self.engine)     
+
+    #Вспомогательные
+    def print_users(self, msg=''):
+        '''Напечатать все записи о пользователях'''
+        print('print_users', msg, User.query.all())
 
 
-def del_user(login):
-    '''Удаление пользователя из базы'''
-    try:
-        u = User
-        check_user = u.query.filter(User.login == login).first()
-        if check_user:
-            #пользоваетель есть
-            if not check_user.isdeleted:
-                check_user.isdeleted = True
-                db_session.commit()
-                return True
-        return False
-    except:
-        print('except in del_user')
-        return False
+    def remove_user(self, vlogin):
+        '''Удаление записи пользователя из базы'''
+        User.query.filter_by(login=vlogin).delete()
+        self.db_session.commit()
 
 
-def update_sched(sched):
-    '''Обновить расписание в базе'''
-    assert( 2 == len(sched))
-    month, schedule = sched
-    schedule = json.JSONEncoder().encode(schedule)
-    try:
-        s = Schedules
-        check_sched = s.query.filter(Schedules.month == month).first()
-        if check_sched:
-            #расписание уже есть
-            check_sched.schedule = schedule
-            db_session.commit()
-        else:
-            new_sched= Schedules(month, schedule)
-            db_session.add(new_sched)
-            db_session.commit()
-        return True
-    except:
-        print('except in update_sched')
-        return False
+    def print_schedules(self, msg=''):
+        '''Напечатать все записи о расписаниях'''
+        print('print_schedules', msg, Schedules.query.all())
 
 
-def get_schedules():
-    '''Получить текущий набор расписаний'''
-    scheds = db_session.query(Schedules).all()
-    result = {}
-    for i in scheds:
-        obj = json.JSONDecoder().decode(i.schedule)
-        converted_obj = {}
-        for item in obj.items():
-            converted_obj[int(item[0])] = item[1]
-        result[i.month] = converted_obj
-    return result
+    #Интерфейс к базе
+    def get_users(self):
+        '''Получить текущий список пользователей'''
+        logins_as_tuples = self.db_session.query(User.login).filter_by(isdeleted=False).all()
+        logins = []
+        for login in logins_as_tuples:
+            logins.append(login[0])
+        return logins
+
+
+    def add_user(self, login):
+        '''Добавление пользователя в базу'''
+        try:
+            #sqlalchemy сам экранирует символы
+            #login = login.remove("'")
+            #login = login.remove('"')
+            u = User
+            check_user = u.query.filter(User.login == login).first()
+            if check_user:
+                #пользоваетель есть
+                if check_user.isdeleted:
+                    check_user.isdeleted = False
+                    self.db_session.commit()
+                    return True
+                else:
+                    return False
+            
+            new_user = User(login, False)
+            self.db_session.add(new_user)
+            self.db_session.commit()
+            return True
+        except:
+            print('except in add_user')
+            return False
+
+
+    def del_user(self, login):
+        '''Удаление пользователя из базы'''
+        try:
+            u = User
+            check_user = u.query.filter(User.login == login).first()
+            if check_user:
+                #пользоваетель есть
+                if not check_user.isdeleted:
+                    check_user.isdeleted = True
+                    self.db_session.commit()
+                    return True
+            return False
+        except:
+            print('except in del_user')
+            return False
+
+
+    def update_sched(self, sched):
+        '''Обновить расписание в базе'''
+        assert( 2 == len(sched))
+        month, schedule = sched
+        schedule = json.JSONEncoder().encode(schedule)
+        try:
+            s = Schedules
+            check_sched = s.query.filter(Schedules.month == month).first()
+            if check_sched:
+                #расписание уже есть
+                check_sched.schedule = schedule
+                self.db_session.commit()
+            else:
+                new_sched= Schedules(month, schedule)
+                self.db_session.add(new_sched)
+                self.db_session.commit()
+            return True
+        except:
+            print('except in update_sched')
+            return False
+
+
+    def get_schedules(self):
+        '''Получить текущий набор расписаний'''
+        scheds = self.db_session.query(Schedules).all()
+        result = {}
+        for i in scheds:
+            obj = json.JSONDecoder().decode(i.schedule)
+            converted_obj = {}
+            for item in obj.items():
+                converted_obj[int(item[0])] = item[1]
+            result[i.month] = converted_obj
+        return result
 
 
 #проверки
-def example_users():
+def example_users(db):
     '''Примеры работы с таблицей пользователей'''
-    print(get_users())
-    print(add_user('test_user1'))
-    print(add_user('test_user1'))#False
-    print(add_user('test_user2_del'))
-    print(add_user('test_user3'))
-    print_users('3 ok users')
-    print(del_user('test_user2_del'))
-    print(get_users())
-    print_users('2 ok users, 1 del user')
-    print(del_user('notexists'))#False
-    print_users('2 ok users, 1 del user')
-    print(del_user('test_user3'))
-    print_users('1 ok user, 2 del users')
-    print(add_user('test_user3'))
-    print(get_users())
-    print_users('2 ok users, 1 del user')
-    remove_user('test_user2_del')
-    print(get_users())
-    print_users('2 ok users')
+    print(db.get_users())
+    print(db.add_user('test_user1'))
+    print(db.add_user('test_user1'))#False
+    print(db.add_user('test_user2_del'))
+    print(db.add_user('test_user3'))
+    db.print_users('3 ok users')
+    print(db.del_user('test_user2_del'))
+    print(db.get_users())
+    db.print_users('2 ok users, 1 del user')
+    print(db.del_user('notexists'))#False
+    db.print_users('2 ok users, 1 del user')
+    print(db.del_user('test_user3'))
+    db.print_users('1 ok user, 2 del users')
+    print(db.add_user('test_user3'))
+    print(db.get_users())
+    db.print_users('2 ok users, 1 del user')
+    db.remove_user('test_user2_del')
+    print(db.get_users())
+    db.print_users('2 ok users')
 
 
-def example_schedules():
+def example_schedules(db):
     '''Примеры работы с таблицей расписаний'''
-    print(get_schedules())
-    update_sched((201611,{25:'user1', 28:'user2',29:'user1', 30:'user2'} ))
-    print(get_schedules())
-    update_sched((201611,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
-    print(get_schedules())
-    update_sched((201612,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
-    print(get_schedules())
+    print(db.get_schedules())
+    db.update_sched((201611,{25:'user1', 28:'user2',29:'user1', 30:'user2'} ))
+    print(db.get_schedules())
+    db.update_sched((201611,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
+    print(db.get_schedules())
+    db.update_sched((201612,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
+    print(db.get_schedules())
 
 
 if __name__ == '__main__':
-    connect_db('test_sdb')
-    example_users()
+    db = SchedulesDb('test_sdb1')
+    example_users(db)
     print('-'*80)
-    example_schedules()
+    example_schedules(db)

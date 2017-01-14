@@ -48,8 +48,6 @@ class Schedules(Base):
 
         
 class SchedulesDb:
-    engine = None
-    db_session = None
     
     def __init__(self, dbname):
         #TODO убрать глобальную Base

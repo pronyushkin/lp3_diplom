@@ -87,20 +87,21 @@ class ScheduleMaker:
         return True
 
 
-    def make_schedule(self):
+    def make_schedule(self, schedule_date):
         '''
         Формируем расписание.
         Расписание формируется от текущего дня и до конца месяца, 
         при этом не рабочие дни не должны использоваться.
         Пример (201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'} )
         '''
-        dit = datetime.today()
-        #для проверки с любого дня раскоментировать строку ниже и установить там день
-        #dit = dit.replace(day = 15)
-        schedule_id = dit.year * 100 + dit.month
-        next_month_begin = datetime.today() + relativedelta(months=1)
+        if schedule_date:
+            dit = datetime.datetime(year=schedule_date//100, month=schedule_date%100, day = 1)
+        else:
+            dit = datetime.today()
+            schedule_id = dit.year * 100 + dit.month
+        next_month_begin = dit + relativedelta(months=1)
         next_month_begin = next_month_begin.replace(day = 1)
-        sch_dates = {}
+        sch_dates = self.schedules.get(schedule_id,{})
         user_id = self.find_firstid(schedule_id,dit.day)
         user_lim = len(self.users)
         while dit < next_month_begin:
@@ -111,15 +112,34 @@ class ScheduleMaker:
         return (schedule_id, sch_dates)
 
 
-    def make_schedule_and_save(self):
+    def make_schedule_and_save(self, schedule_date):
         '''
         Формируем расписание и сохраняем его.
         '''
-        sched = self.make_schedule()
+        sched = self.make_schedule(schedule_date)
         if not schedule_db.update_sched(sched):
             return {}
         self.schedules[sched[0]] = sched[1]
         return sched[1]
+
+
+    def remove_duty_by_day(self,day):
+        '''
+        Сдвинуть график дежурств.
+
+        Находится день. 
+        Расписание сдвигается на один день, для последнего дня назначается новый пользователь в обычном порядке.
+        Возвращает 'ok' в случае успеха или строку начинающуюся с 'err' с информацией об ошибке в противном случае.
+        '''
+        return 'ok'
+
+
+    def remove_duty_by_user(self,login):
+        '''
+        Удаление всех дежурств оставшихся у этого пользователя в этом месяце
+
+        '''
+        return 'ok'
 
 
 schedule_maker = ScheduleMaker()

@@ -14,7 +14,7 @@ class ScheduleMaker:
         #исходное состояние получаем из базы
         #список пользователей
         self.users = self.db.get_users()
-        #словарь имеющихся расписаний 
+        #словарь имеющихся расписаний
         #   ключ - годмесяц(YYYYMM), значение - словарь расписания на месяц
         #где:
         # словарь расписания на месяц
@@ -48,14 +48,11 @@ class ScheduleMaker:
         return 'err deleting user {} failed'.format(login)
 
 
-    def find_firstid(self,schedule_id, today, iteration = 1):
-        '''
-        Ищем индекс пользователя который попадет в следующее расписание первым
-        '''
-        prev = self.schedules.get(schedule_id,  None)
+    def check_prev(self, schedule_id, today):
         last_user = None
+        prev = self.schedules.get(schedule_id,  None)
         if prev:
-            checkday = today - 1 
+            checkday = today - 1
             while checkday:
                 if not (checkday in prev.keys()):
                     break
@@ -63,12 +60,24 @@ class ScheduleMaker:
                     last_user = prev[today - 1]
                     break
                 checkday -= 1
-        elif iteration:
-            iteration -= 1
-            #делаем попытку проверить предыдущий месяц 
-            #(количество попыток можно увеличить настройкой значения по умолчанию)
-            #если сделали достаточно попыток то можно начинать сначала
-            return self.find_firstid(schedule_id - 1, 1, iteration)
+        return last_user
+
+
+    def find_firstid(self,schedule_id, today):
+        '''
+        Ищем индекс пользователя который попадет в следующее расписание первым
+        '''
+        last_user = None
+        #проверяем текущий месяц
+        if 1 < today:
+            last_user = self.check_prev(schedule_id, today)
+
+        if not last_user:
+            #проверяем предыдущий месяц (можно сделать цикл сколько надо)
+            d = datetime(year=schedule_id//100, month=schedule_id%100, day = 1)
+            d = d - timedelta(days=1)
+            last_user = self.check_prev(schedule_id - 1, d.day + 1)
+
         #если предыдущий пользователь найден возвращаем следующий индекс
         if last_user:
             return self.users.index(last_user) + 1
@@ -91,18 +100,33 @@ class ScheduleMaker:
     def make_schedule(self, schedule_id):
         '''
         Формируем расписание.
-        Расписание формируется от текущего дня и до конца месяца, 
+        Расписание формируется от текущего дня и до конца месяца, либо от начала указанного месяца,
         при этом не рабочие дни не должны использоваться.
         Пример (201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'} )
+        Если месяц расписание уже было составлено то прошедшие дни не должны изменяться.
         '''
-        if schedule_id:
+        nowday = datetime.today().date()
+        now_id = nowday.year * 100 + nowday.month
+        if not schedule_id:
+            schedule_id = now_id
+
+        if not len(self.users) or schedule_id < 201601:
+            print('make_schedule wrong args')
+            return (schedule_id, {})
+
+        sch_dates = self.schedules.get(schedule_id,{})
+        #на прошлые месяцы можно создавать только если еще не было
+        if schedule_id < now_id and sch_dates != {}:
+            return sch_dates
+
+        if schedule_id != now_id:
             dit = datetime(year=schedule_id//100, month=schedule_id%100, day = 1)
         else:
-            dit = datetime.today()
-            schedule_id = dit.year * 100 + dit.month
+            dit = nowday
+
         next_month_begin = dit + relativedelta(months=1)
         next_month_begin = next_month_begin.replace(day = 1)
-        sch_dates = self.schedules.get(schedule_id,{})
+
         user_id = self.find_firstid(schedule_id,dit.day)
         user_lim = len(self.users)
         while dit < next_month_begin:
@@ -128,7 +152,7 @@ class ScheduleMaker:
         '''
         Сдвинуть график дежурств.
 
-        Находится день. 
+        Находится день.
         Расписание сдвигается на один день, для последнего дня назначается новый пользователь в обычном порядке.
         Возвращает 'ok' в случае успеха или строку начинающуюся с 'err' с информацией об ошибке в противном случае.
         '''
@@ -138,7 +162,6 @@ class ScheduleMaker:
     def remove_duty_by_user(self,login):
         '''
         Удаление всех дежурств оставшихся у этого пользователя в этом месяце
-
         '''
         return 'ok'
 

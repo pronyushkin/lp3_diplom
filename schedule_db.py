@@ -46,9 +46,9 @@ class Schedules(Base):
     def __str__(self):
         return '({},{})'.format(self.month, self.schedule)
 
-        
+
 class SchedulesDb:
-    
+
     def __init__(self, dbname):
         #TODO убрать глобальную Base
         global Base
@@ -56,7 +56,7 @@ class SchedulesDb:
         self.db_session = scoped_session(sessionmaker(bind=self.engine))
         Base.query = self.db_session.query_property()
         #создаст базу если она не была создана
-        Base.metadata.create_all(bind=self.engine)     
+        Base.metadata.create_all(bind=self.engine)
 
     #Вспомогательные
     def print_users(self, msg=''):
@@ -101,7 +101,7 @@ class SchedulesDb:
                     return True
                 else:
                     return False
-            
+
             new_user = User(login, False)
             self.db_session.add(new_user)
             self.db_session.commit()

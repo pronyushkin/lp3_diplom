@@ -2,21 +2,23 @@
 Формат базы
 Таблица пользователи             - users.
 Таблица Списоки расписаний       - schedules
-TODO убрать использование глобальных переменных (Base)
+TODO убрать использование глобальных переменных (BASE_TYPE)
 '''
 #pip install sqlalchemy
+#pylint: disable=maybe-no-member
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy import Column, Integer, Boolean, Text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import update
 import json
 
 
-Base = declarative_base()
+BASE_TYPE = declarative_base()
 
 
-class User(Base):
+class User(BASE_TYPE):
+    '''Мапинг пользователей'''
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     login = Column(Text, unique=True)
@@ -30,13 +32,14 @@ class User(Base):
         return '<User {} {}>'.format(self.login, self.isdeleted)
 
 
-class Schedules(Base):
+class Schedules(BASE_TYPE):
+    '''Мапинг расписаний'''
     __tablename__ = 'schedules'
     id = Column(Integer, primary_key=True)
     month = Column(Integer, unique=True)
     schedule = Column(Text)
 
-    def __init__(self, month, schedule='\{\}'):
+    def __init__(self, month, schedule=r'{}'):
         self.month = month
         self.schedule = schedule
 
@@ -48,15 +51,15 @@ class Schedules(Base):
 
 
 class SchedulesDb:
-
+    '''Работа с базой данных расписаний'''
     def __init__(self, dbname):
-        #TODO убрать глобальную Base
-        global Base
+        #TODO убрать глобальную BASE_TYPE
+        global BASE_TYPE
         self.engine = create_engine('sqlite:///{}.db'.format(dbname))
         self.db_session = scoped_session(sessionmaker(bind=self.engine))
-        Base.query = self.db_session.query_property()
+        BASE_TYPE.query = self.db_session.query_property()
         #создаст базу если она не была создана
-        Base.metadata.create_all(bind=self.engine)
+        BASE_TYPE.metadata.create_all(bind=self.engine)
 
     #Вспомогательные
     def print_users(self, msg=''):
@@ -130,7 +133,7 @@ class SchedulesDb:
 
     def update_sched(self, sched):
         '''Обновить расписание в базе'''
-        assert( 2 == len(sched))
+        assert(2 == len(sched))
         month, schedule = sched
         schedule = json.JSONEncoder().encode(schedule)
         try:
@@ -141,7 +144,7 @@ class SchedulesDb:
                 check_sched.schedule = schedule
                 self.db_session.commit()
             else:
-                new_sched= Schedules(month, schedule)
+                new_sched = Schedules(month, schedule)
                 self.db_session.add(new_sched)
                 self.db_session.commit()
             return True
@@ -164,42 +167,42 @@ class SchedulesDb:
 
 
 #проверки
-def example_users(db):
+def example_users(example_db):
     '''Примеры работы с таблицей пользователей'''
-    print(db.get_users())
-    print(db.add_user('test_user1'))
-    print(db.add_user('test_user1'))#False
-    print(db.add_user('test_user2_del'))
-    print(db.add_user('test_user3'))
-    db.print_users('3 ok users')
-    print(db.del_user('test_user2_del'))
-    print(db.get_users())
-    db.print_users('2 ok users, 1 del user')
-    print(db.del_user('notexists'))#False
-    db.print_users('2 ok users, 1 del user')
-    print(db.del_user('test_user3'))
-    db.print_users('1 ok user, 2 del users')
-    print(db.add_user('test_user3'))
-    print(db.get_users())
-    db.print_users('2 ok users, 1 del user')
-    db.remove_user('test_user2_del')
-    print(db.get_users())
-    db.print_users('2 ok users')
+    print(example_db.get_users())
+    print(example_db.add_user('test_user1'))
+    print(example_db.add_user('test_user1'))#False
+    print(example_db.add_user('test_user2_del'))
+    print(example_db.add_user('test_user3'))
+    example_db.print_users('3 ok users')
+    print(example_db.del_user('test_user2_del'))
+    print(example_db.get_users())
+    example_db.print_users('2 ok users, 1 del user')
+    print(example_db.del_user('notexists'))#False
+    example_db.print_users('2 ok users, 1 del user')
+    print(example_db.del_user('test_user3'))
+    example_db.print_users('1 ok user, 2 del users')
+    print(example_db.add_user('test_user3'))
+    print(example_db.get_users())
+    example_db.print_users('2 ok users, 1 del user')
+    example_db.remove_user('test_user2_del')
+    print(example_db.get_users())
+    example_db.print_users('2 ok users')
 
 
-def example_schedules(db):
+def example_schedules(example_db):
     '''Примеры работы с таблицей расписаний'''
-    print(db.get_schedules())
-    db.update_sched((201611,{25:'user1', 28:'user2',29:'user1', 30:'user2'} ))
-    print(db.get_schedules())
-    db.update_sched((201611,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
-    print(db.get_schedules())
-    db.update_sched((201612,{25:'user2', 28:'user2',29:'user2', 30:'user2'} ))
-    print(db.get_schedules())
+    print(example_db.get_schedules())
+    example_db.update_sched((201611, {25:'user1', 28:'user2', 29:'user1', 30:'user2'}))
+    print(example_db.get_schedules())
+    example_db.update_sched((201611, {25:'user2', 28:'user2', 29:'user2', 30:'user2'}))
+    print(example_db.get_schedules())
+    example_db.update_sched((201612, {25:'user2', 28:'user2', 29:'user2', 30:'user2'}))
+    print(example_db.get_schedules())
 
 
 if __name__ == '__main__':
-    db = SchedulesDb('test_sdb1')
-    example_users(db)
+    main_db = SchedulesDb('test_sdb1')
+    example_users(main_db)
     print('-'*80)
-    example_schedules(db)
+    example_schedules(main_db)

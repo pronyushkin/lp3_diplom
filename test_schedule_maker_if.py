@@ -24,7 +24,7 @@ def setup_module(module):
     '''Подключиться к тестовой базе'''
     print('pytest setup_module', module)
     teardown_module(module)
-    schm.cmd_init(dbname)
+    schm.cmd_init(dbname, True)
 
 
 def test_schedule_maker_if_users():
@@ -94,8 +94,23 @@ def test_schedule_maker_if_sched():
         21: 'u1', 22: 'u2', 23: 'u3', 26: 'u4',
         27: 'u1', 28: 'u2', 29: 'u3', 30: 'u4'}
     assert(str(ctrl2) == schm.cmd_make_schedule(201612))
-    schm.cmd_make_schedule()
-    #печать имеющихся словарей
+
+    #поскольку выставлен флаг тест сегодня 2016/09/15
+    ctrl3 = {
+        15: 'u1', 16: 'u2', 19: 'u3', 20: 'u4',
+        21: 'u1', 22: 'u2', 23: 'u3', 26: 'u4',
+        27: 'u1', 28: 'u2', 29: 'u3', 30: 'u4'}
+    assert(str(ctrl3) == schm.cmd_make_schedule())
+    assert('ok' == schm.cmd_remove_duty_by_day(19))
+    ctrl4 = {
+        15: 'u1', 16: 'u2',           19: 'u4',
+        20: 'u1', 21: 'u2', 22: 'u3', 23: 'u4',
+        26: 'u1', 27: 'u2', 28: 'u3', 29: 'u4',
+        30: 'u1'}
+    assert(str(ctrl4) == schm.cmd_show_schedule(201609))
+    assert('ok' != schm.cmd_remove_duty_by_day(14))
+
+    #печать имеющихся расписаний
     print('showAll', schm.cmd_show_schedule(None))
     #очищаем
     for u in cu:

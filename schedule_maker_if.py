@@ -9,15 +9,18 @@ pip install sqlalchemy
 '''
 
 import schedule_maker as schm
+if __name__ == '__main__':
+    from datetime import datetime, date, timedelta
+
 
 maker = None
 
-def cmd_init(dbname = 'sched'):
+def cmd_init(dbname = 'sched', istestmode = False):
     '''
     Настраивает работу с указанной базой.
     '''
     global maker
-    maker = schm.ScheduleMaker(dbname)
+    maker = schm.ScheduleMaker(dbname, istestmode)
 
 
 def init_if_need():
@@ -34,7 +37,7 @@ def cmd_remove_duty_by_day(day):
     Возвращает 'ok' в случае успеха или строку начинающуюся с 'err' с информацией об ошибке в противном случае.
     '''
     init_if_need()
-    return maker.remove_duty_by_day(day)
+    return maker.remove_duty_by_day(day, None)
 
 
 def cmd_add_user(login):

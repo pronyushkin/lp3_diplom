@@ -9,7 +9,7 @@ class ScheduleMaker:
     Класс реализующий логику составления расписаний
     '''
 
-    def __init__(self, dbname):
+    def __init__(self, dbname, istestmode = False):
         self.db = schedule_db.SchedulesDb(dbname)
         #исходное состояние получаем из базы
         #список пользователей
@@ -20,6 +20,21 @@ class ScheduleMaker:
         # словарь расписания на месяц
         #   ключ - число, значение пользователь
         self.schedules = self.db.get_schedules()
+        self.istestmode = istestmode
+
+
+    def get_now(self):
+        '''
+        Получение текущей даты и индекса расписания текущего месяца
+        '''
+        if self.istestmode:
+            #для тестов нужно чтобы дата была одинаковая чтобы совпадала с тестовыми данными
+            now_day = datetime(year=2016, month=9, day = 15)
+        else:
+            now_day = datetime.today().date()
+
+        now_id = now_day.year * 100 + now_day.month
+        return (now_id, now_day)
 
 
     def add_user(self,login):
@@ -105,8 +120,7 @@ class ScheduleMaker:
         Пример (201611:{25:'user1', 28:'user2',29:'user1', 30:'user2'} )
         Если месяц расписание уже было составлено то прошедшие дни не должны изменяться.
         '''
-        nowday = datetime.today().date()
-        now_id = nowday.year * 100 + nowday.month
+        now_id, nowday = self.get_now()
         if not schedule_id:
             schedule_id = now_id
 
@@ -148,7 +162,7 @@ class ScheduleMaker:
         return sched[1]
 
 
-    def remove_duty_by_day(self,day):
+    def remove_duty_by_day(self, rmday, schedule_id):
         '''
         Сдвинуть график дежурств.
 
@@ -156,18 +170,44 @@ class ScheduleMaker:
         Расписание сдвигается на один день, для последнего дня назначается новый пользователь в обычном порядке.
         Возвращает 'ok' в случае успеха или строку начинающуюся с 'err' с информацией об ошибке в противном случае.
         '''
+        now_id, nowday = self.get_now()
+        if not schedule_id:
+            schedule_id = now_id
+        if schedule_id < now_id:
+            return 'err can not to change past'
+        if now_id == schedule_id and nowday.day >= rmday:
+            return 'err can not to change past'
+
+        sched = self.schedules.get(schedule_id, None)
+        if not sched:
+            return 'err have no schedule'
+
+        if not len(sched):
+            return 'err schedule is empty'
+
+        if not rmday in sched:
+            return 'err day in not in schedule'
+
+        days = sorted(sched.keys())
+        i = days.index(rmday)
+        while i + 1 < len(days):
+            sched[days[i]] = sched[days[i+1]]
+            i += 1
+
+        last_user_id = self.users.index(sched[days[-2]])
+        user_lim = len(self.users)
+        user_id = (last_user_id + 1) % user_lim
+        sched[days[-1]] = self.users[user_id]
+        if not self.db.update_sched((schedule_id,sched)):
+            return 'err updatedb'
         return 'ok'
 
 
     def remove_duty_by_user(self,login):
         '''
+        TODO
         Удаление всех дежурств оставшихся у этого пользователя в этом месяце
+        и удаление расписаний на будущие месяцы
         '''
         return 'ok'
 
-
-if __name__ == '__main__':
-    schedule_maker = ScheduleMaker('test_schedule_maker')
-    print(schedule_maker.add_user('testuser1'))
-    print(schedule_maker.add_user('testuser2'))
-    print(schedule_maker.make_schedule(201601))

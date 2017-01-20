@@ -1,7 +1,8 @@
 '''Реализация логики "Составление расписания"'''
-import schedule_db
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+
+import schedule_db
 
 
 class ScheduleMaker:
@@ -9,7 +10,7 @@ class ScheduleMaker:
     Класс реализующий логику составления расписаний
     '''
 
-    def __init__(self, dbname, istestmode = False):
+    def __init__(self, dbname, istestmode=False):
         self.db = schedule_db.SchedulesDb(dbname)
         #исходное состояние получаем из базы
         #список пользователей
@@ -29,15 +30,15 @@ class ScheduleMaker:
         '''
         if self.istestmode:
             #для тестов нужно чтобы дата была одинаковая чтобы совпадала с тестовыми данными
-            now_day = datetime(year=2016, month=9, day = 15)
+            sch_day = datetime(year=2016, month=9, day=15)
         else:
-            now_day = datetime.today().date()
+            sch_day = datetime.today().date()
 
-        now_id = now_day.year * 100 + now_day.month
-        return (now_id, now_day)
+        now_id = sch_day.year * 100 + sch_day.month
+        return (now_id, sch_day)
 
 
-    def add_user(self,login):
+    def add_user(self, login):
         '''
         Добавляем пользователя
         '''
@@ -50,7 +51,7 @@ class ScheduleMaker:
         return 'err user {} addition failed'.format(login)
 
 
-    def del_user(self,login):
+    def del_user(self, login):
         '''
         Удаляем пользователя
         '''
@@ -64,12 +65,15 @@ class ScheduleMaker:
 
 
     def check_prev(self, schedule_id, today):
+        '''
+        Проверить предыдущее расписание
+        '''
         last_user = None
-        prev = self.schedules.get(schedule_id,  None)
+        prev = self.schedules.get(schedule_id, None)
         if prev:
             checkday = today - 1
             while checkday:
-                if not (checkday in prev.keys()):
+                if not checkday in prev.keys():
                     break
                 if prev[checkday] in self.users:
                     last_user = prev[today - 1]
@@ -78,20 +82,20 @@ class ScheduleMaker:
         return last_user
 
 
-    def find_firstid(self,schedule_id, today):
+    def find_firstid(self, schedule_id, today):
         '''
         Ищем индекс пользователя который попадет в следующее расписание первым
         '''
         last_user = None
         #проверяем текущий месяц
-        if 1 < today:
+        if today > 1:
             last_user = self.check_prev(schedule_id, today)
 
         if not last_user:
             #проверяем предыдущий месяц (можно сделать цикл сколько надо)
-            d = datetime(year=schedule_id//100, month=schedule_id%100, day = 1)
-            d = d - timedelta(days=1)
-            last_user = self.check_prev(schedule_id - 1, d.day + 1)
+            last_date = datetime(year=schedule_id//100, month=schedule_id%100, day=1)
+            last_date = last_date - timedelta(days=1)
+            last_user = self.check_prev(schedule_id - 1, last_date.day + 1)
 
         #если предыдущий пользователь найден возвращаем следующий индекс
         if last_user:
@@ -100,12 +104,12 @@ class ScheduleMaker:
         return 0
 
 
-    def is_workday(self,dit):
+    def is_workday(self, dit):
         '''
         Определить является ли дата рабочим днем
         TODO добавить возможность настройки дополнительных рабочих и не рабочих дней
-        для этого можно завести еще два списка, рабочих и не рабочих дней и функции для управления ими
-        пока отбрасываем только субботы, воскресенья
+        для этого можно завести еще два списка, рабочих и не рабочих дней и функции для управления
+        ими пока отбрасываем только субботы, воскресенья
         '''
         if dit.weekday() == 5 or dit.weekday() == 6:
             return False
@@ -128,20 +132,20 @@ class ScheduleMaker:
             print('make_schedule wrong args')
             return (schedule_id, {})
 
-        sch_dates = self.schedules.get(schedule_id,{})
+        sch_dates = self.schedules.get(schedule_id, {})
         #на прошлые месяцы можно создавать только если еще не было
         if schedule_id < now_id and sch_dates != {}:
             return sch_dates
 
         if schedule_id != now_id:
-            dit = datetime(year=schedule_id//100, month=schedule_id%100, day = 1)
+            dit = datetime(year=schedule_id//100, month=schedule_id%100, day=1)
         else:
             dit = nowday
 
         next_month_begin = dit + relativedelta(months=1)
-        next_month_begin = next_month_begin.replace(day = 1)
+        next_month_begin = next_month_begin.replace(day=1)
 
-        user_id = self.find_firstid(schedule_id,dit.day)
+        user_id = self.find_firstid(schedule_id, dit.day)
         user_lim = len(self.users)
         while dit < next_month_begin:
             if self.is_workday(dit):
@@ -167,8 +171,10 @@ class ScheduleMaker:
         Сдвинуть график дежурств.
 
         Находится день.
-        Расписание сдвигается на один день, для последнего дня назначается новый пользователь в обычном порядке.
-        Возвращает 'ok' в случае успеха или строку начинающуюся с 'err' с информацией об ошибке в противном случае.
+        Расписание сдвигается на один день,
+        для последнего дня назначается новый пользователь в обычном порядке.
+        Возвращает 'ok' в случае успеха или строку начинающуюся с
+        'err' с информацией об ошибке в противном случае.
         '''
         now_id, nowday = self.get_now()
         if not schedule_id:
@@ -198,16 +204,16 @@ class ScheduleMaker:
         user_lim = len(self.users)
         user_id = (last_user_id + 1) % user_lim
         sched[days[-1]] = self.users[user_id]
-        if not self.db.update_sched((schedule_id,sched)):
+        if not self.db.update_sched((schedule_id, sched)):
             return 'err updatedb'
         return 'ok'
 
 
-    def remove_duty_by_user(self,login):
+    def remove_duty_by_user(self, login):
         '''
         TODO
         Удаление всех дежурств оставшихся у этого пользователя в этом месяце
         и удаление расписаний на будущие месяцы
         '''
+        #print('remove_duty_by_user{} is not implement yet'.format(login))
         return 'ok'
-

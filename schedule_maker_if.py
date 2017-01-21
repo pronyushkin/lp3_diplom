@@ -66,6 +66,14 @@ def cmd_del_user(login):
     return result
 
 
+def cmd_rebuild():
+    '''
+    Удаляет будущие расписания и обновляет текущее
+    '''
+    init_if_need()
+    maker.remove_future_update_this()
+
+
 def cmd_try_schedule(schedule_date = None):
     '''
     Формируем расписание.

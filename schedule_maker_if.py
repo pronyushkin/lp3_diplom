@@ -184,6 +184,10 @@ def cmd_show_schedule(schedule_date):
 
 if __name__ == '__main__':
     '''Минимальное наполнение базы для тестирование с web интерфейсом'''
+    try:
+        raise ScheduleException('test exception')
+    except ScheduleException as e:
+        print('err {}'.format(e.msg))
     cmd_init()
     cmd_make_schedule()
     for i in range(1,5):

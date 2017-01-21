@@ -132,5 +132,5 @@ if __name__ == '__main__':
     '''Проверки'''
     setup_module(__file__)
     test_schedule_maker_if_users()
-    test_schedule_maker_if_all()
+    test_schedule_maker_if_sched()
     teardown_module(__file__)

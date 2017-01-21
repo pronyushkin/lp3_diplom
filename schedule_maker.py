@@ -213,11 +213,14 @@ class ScheduleMaker:
         return 'ok'
 
 
-    def remove_duty_by_user(self, login):
+    def remove_future_update_this(self):
         '''
-        TODO
-        Удаление всех дежурств оставшихся у этого пользователя в этом месяце
-        и удаление расписаний на будущие месяцы
+        Удаление расписаний на будущие месяцы
+        Перегенерация текущего если надо
         '''
-        #print('remove_duty_by_user{} is not implement yet'.format(login))
-        return 'ok'
+        now_id, nowday = self.get_now()
+        for sched_id in self.schedules:
+            if now_id < sched_id:
+                self.db.delete_sched(sched_id)
+        if now_id in self.schedules:
+            self.make_schedule_and_save(None)

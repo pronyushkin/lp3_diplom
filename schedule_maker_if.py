@@ -61,7 +61,8 @@ def cmd_del_user(login):
     result = maker.del_user(login)
     #также снимаем его с будущих дежурств
     if 'ok' == result:
-        maker.remove_duty_by_user(login)
+        maker.remove_future_update_this()
+
     return result
 
 

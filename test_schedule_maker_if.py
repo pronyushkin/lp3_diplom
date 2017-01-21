@@ -115,7 +115,16 @@ def test_schedule_maker_if_sched():
     #печать имеющихся расписаний
     print('showAll', schm.cmd_show_schedule(None))
     #очищаем
+    ctrl5 = {
+        15: 'u4', 16: 'u4',           19: 'u4',
+        20: 'u4', 21: 'u4', 22: 'u4', 23: 'u4',
+        26: 'u4', 27: 'u4', 28: 'u4', 29: 'u4',
+        30: 'u4'}    
     for u in cu:
+        if 1 == len(cu):
+            #убеждаемся что при удалении пользователей обновляется расписание
+            assert(str(ctrl5) == schm.cmd_show_schedule(201609))
+        #удаляем пользователя
         assert('ok' == schm.cmd_del_user(u))
 
 

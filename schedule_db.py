@@ -120,7 +120,7 @@ class SchedulesDb:
             u = User
             check_user = u.query.filter(User.login == login).first()
             if check_user:
-                #пользоваетель есть
+                #пользователь есть
                 if not check_user.isdeleted:
                     check_user.isdeleted = True
                     self.db_session.commit()
@@ -128,6 +128,16 @@ class SchedulesDb:
             return False
         except:
             print('except in del_user')
+            return False
+
+    def delete_sched(self, month):
+        '''Удалить расписание из базы'''
+        try:
+            Schedules.query.filter(Schedules.month == month).delete()
+            self.db_session.commit()
+            return True
+        except:
+            print('except in delete_sched')
             return False
 
 

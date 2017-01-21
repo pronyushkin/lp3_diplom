@@ -13,6 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import update
 import json
 
+from schedule_exceptions import ScheduleException
 
 BASE_TYPE = declarative_base()
 

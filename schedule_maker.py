@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+from schedule_exceptions import ScheduleException
 import schedule_db
 
 

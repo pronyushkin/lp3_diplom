@@ -106,3 +106,13 @@ def cmd_show_schedule(schedule_date):
     else:
         sched = maker.schedules
     return str(sched)
+
+
+if __name__ == '__main__':
+    '''Минимальное наполнение базы для тестирование с web интерфейсом'''
+    cmd_init()
+    cmd_make_schedule()
+    for i in range(1,5):
+        user='u{}'.format(i)
+        print(cmd_add_user(user))
+

@@ -125,8 +125,12 @@ class ScheduleMaker:
         Если месяц расписание уже было составлено то прошедшие дни не должны изменяться.
         '''
         now_id, nowday = self.get_now()
+
         if not schedule_id:
             schedule_id = now_id
+
+        if schedule_id > now_id + 100 :
+            return (schedule_id, {})
 
         if not len(self.users) or schedule_id < 201601:
             print('make_schedule wrong args')

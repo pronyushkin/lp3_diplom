@@ -110,6 +110,8 @@ def test_schedule_maker_if_sched():
     assert(str(ctrl4) == schm.cmd_show_schedule(201609))
     assert('ok' != schm.cmd_remove_duty_by_day(14))
 
+    assert(str({}) == schm.cmd_show_schedule(201710))
+
     #печать имеющихся расписаний
     print('showAll', schm.cmd_show_schedule(None))
     #очищаем

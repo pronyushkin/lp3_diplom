@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, render_template, request
 import datetime
 from calendar import Calendar
@@ -5,7 +6,12 @@ import yaml
 import locale
 import schedule_maker_if
 
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+
+def setup_locale(platform):
+    if platform == 'win32':
+        locale.setlocale(locale.LC_ALL, 'ru')
+    elif platform == 'linux':
+        locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 def process_month(date):
     month = date.strftime("%B")
@@ -40,6 +46,7 @@ schedule_app = Flask(__name__)
 def index():
     date = datetime.date.today()
 #    date = datetime.date(date.year, date.month, 1)
+#    date = datetime.date(date.year, 2, 1)
     schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
     schedule_month = process_month(date)
 
@@ -69,5 +76,6 @@ def mytest():
     return result
 
 if __name__ == "__main__":
+    setup_locale(sys.platform)
     schedule_app.run(host='0.0.0.0', port=int("8080"), debug=True)
 

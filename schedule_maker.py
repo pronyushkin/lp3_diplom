@@ -1,4 +1,4 @@
-"""Реализация логики "Составление расписания""""
+"""Реализация логики 'Составление расписания'"""
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 

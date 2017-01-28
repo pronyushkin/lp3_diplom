@@ -23,17 +23,17 @@
   </head>
   <body>
 
-<table>
-    <tr>
-    <th>
-    <form class="navbar-form navbar-right" action="/useradd" method="POST">
-        <div class="form-group">
-            <input type="text" class="form-control" placeholder="пользователь" name="user">
-        </div>
-        <button type="submit" class="btn btn-default">Добавить</button>
-    </form>
-    </th>
-    </tr>
+  <table>
+      <tr>
+          <th>
+              <form class="navbar-form navbar-right" action="/useradd" method="POST">
+                  <div class="form-group">
+                      <input type="text" class="form-control" placeholder="пользователь" name="user">
+                  </div>
+                  <button type="submit" class="btn btn-default">Добавить</button>
+              </form>
+          </th>
+      </tr>
 
     <tr>
     <th>
@@ -45,7 +45,7 @@
     </form>
     </th>
     </tr>
-</table>
+  </table>
 
         <div class="container">
             <div class="row">
@@ -75,7 +75,7 @@
                             {% for day in week %}
                                 <td>
                                     <p>{{day}}</p>
-                                    <p>{{schedule_days[day]}}</p>
+                                    <p><a class="btn" href="/duty?day={{day}}&user={{schedule_days[day]}}">{{schedule_days[day]}}</a></p>
                                 </td>
                             {% endfor %}
                             </tr>

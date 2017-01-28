@@ -22,34 +22,12 @@
     <![endif]-->
   </head>
   <body>
-
-  <table>
-      <tr>
-          <th>
-              <form class="navbar-form navbar-right" action="/useradd" method="POST">
-                  <div class="form-group">
-                      <input type="text" class="form-control" placeholder="пользователь" name="user">
-                  </div>
-                  <button type="submit" class="btn btn-default">Добавить</button>
-              </form>
-          </th>
-      </tr>
-
-    <tr>
-    <th>
-    <form class="navbar-form navbar-right" action="/userdel" method="POST">
-        <div class="form-group">
-            <input type="text" class="form-control" placeholder="пользователь" name="user">
-        </div>
-        <button type="submit" class="btn btn-default">Удалить</button>
-    </form>
-    </th>
-    </tr>
-  </table>
-
+    <p/>
         <div class="container">
             <div class="row">
-                <div class="span12">
+                <table>
+                <tr>
+                <th>
                     <table class="table-condensed table-bordered table-striped">
                         <thead>
                             <tr>
@@ -81,8 +59,35 @@
                             </tr>
                         {% endfor %}
                         </tbody>
-                    </table>    
-                </div>
+                    </table>
+                </th>
+                <th>  
+                <table>
+                      <tr>
+                          <th>
+                              <form class="navbar-form navbar-right" action="/useradd" method="POST">
+                                  <div class="form-group">
+                                      <input type="text" class="form-control" placeholder="пользователь" name="user">
+                                  </div>
+                                  <button type="submit" class="btn btn-default">Добавить</button>
+                              </form>
+                          </th>
+                      </tr>
+
+                    <tr>
+                    <th>
+                    <form class="navbar-form navbar-right" action="/userdel" method="POST">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="пользователь" name="user">
+                        </div>
+                        <button type="submit" class="btn btn-default">Удалить</button>
+                    </form>
+                    </th>
+                    </tr>
+                </table>
+            </th>
+            </tr>
+            </table>
             </div>
         </div>
 

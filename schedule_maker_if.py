@@ -38,7 +38,7 @@ def init_if_need():
         cmd_init()
 
 
-def cmd_remove_duty_by_day(day):
+def cmd_remove_duty_by_day(day, schedule_id = None):
     """
     Убираем дежурства пользователя назначенного на указанный день.
 
@@ -48,7 +48,7 @@ def cmd_remove_duty_by_day(day):
     """
     try:
         init_if_need()
-        return maker.remove_duty_by_day(day, None)
+        return maker.remove_duty_by_day(day, schedule_id)
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
@@ -115,7 +115,7 @@ def cmd_rebuild():
         return 'err in cmd_rebuild Unexpected {}'.format(sys.exc_info()[0])
 
 
-def cmd_try_schedule(schedule_date = None):
+def cmd_try_schedule(schedule_id = None):
     """
     Формируем расписание.
     И возвращаем его в требуемом виде.
@@ -126,7 +126,7 @@ def cmd_try_schedule(schedule_date = None):
     """
     try:
         init_if_need()
-        sched = maker.make_schedule(schedule_date)
+        sched = maker.make_schedule(schedule_id)
         return str(sched[1])
     except KeyboardInterrupt:
         raise
@@ -136,7 +136,7 @@ def cmd_try_schedule(schedule_date = None):
         return '{}'
 
 
-def cmd_make_schedule(schedule_date = None):
+def cmd_make_schedule(schedule_id = None):
     """
     Формируем расписание.
     Сохраняем результат в базе.
@@ -147,7 +147,7 @@ def cmd_make_schedule(schedule_date = None):
     """
     try:
         init_if_need()
-        sched_data = maker.make_schedule_and_save(schedule_date)
+        sched_data = maker.make_schedule_and_save(schedule_id)
         return str(sched_data)
     except KeyboardInterrupt:
         raise
@@ -157,7 +157,7 @@ def cmd_make_schedule(schedule_date = None):
         return '{}'
 
 
-def cmd_show_schedule(schedule_date):
+def cmd_show_schedule(schedule_id):
     """
     Извлекает информацию о существующем расписании и возвращает в требуемом виде.
     Пока принимаем дату в формате число вида YYYYMM например 201611
@@ -169,8 +169,8 @@ def cmd_show_schedule(schedule_date):
     """
     try:
         init_if_need()
-        if schedule_date:
-            sched = maker.schedules.get(schedule_date,{})
+        if schedule_id:
+            sched = maker.schedules.get(schedule_id,{})
         else:
             sched = maker.schedules
         return str(sched)

@@ -4,6 +4,7 @@
 Формат базы
 Таблица пользователи             - users.
 Таблица Списоки расписаний       - schedules
+Таблица статусов дней            - days
 TODO убрать использование глобальных переменных (BASE_TYPE)
 """
 # pip install sqlalchemy
@@ -19,6 +20,23 @@ from schedule_exceptions import ScheduleException
 
 
 BASE_TYPE = declarative_base()
+
+
+class Day(BASE_TYPE):
+    """Мапинг Статусов дней"""
+    __tablename__ = 'days'
+    id = Column(Integer, primary_key=True)
+    month = Column(Integer)
+    day = Column(Integer)
+    status = Column(Boolean)
+
+    def __init__(self, month, day, status):
+        self.month = month
+        self.day = day
+        self.status = status
+
+    def __repr__(self):
+        return '<Day {} {} {}>'.format(self.month, self.day, self.status)
 
 
 class User(BASE_TYPE):
@@ -172,6 +190,35 @@ class SchedulesDb:
             result[i.month] = converted_obj
         return result
 
+    def update_day_status(self, status, day, schedule_id):
+        """Обновить в базе информацию о статусе дня"""
+        return True
+        #TODO check and use it
+        try:
+            w = Day
+            check = w.query.filter(Day.month == schedule_id, Day.day == day).first()
+            if check:
+                check.status = status
+            else:
+                new_value = Day(schedule_id, day, status)
+                self.db_session.add(new_value)
+
+            self.db_session.commit()
+            return True
+        except:
+            print('except in update_day_status')
+            return False
+
+    def get_days(self):
+        return {}
+        #TODO check and use it
+        """Извлечь из базы информацию о статусах дней"""
+        data = self.db_session.query(Day).all()
+        result = {}
+        for i in data:
+            month = result.get(i.month, {})
+            month[i.day] = i.status
+            result[i.month] = month
 
 # проверки
 def example_users(example_db):

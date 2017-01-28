@@ -22,6 +22,10 @@ class ScheduleMaker:
         # словарь расписания на месяц
         #   ключ - число, значение пользователь
         self.schedules = self.db.get_schedules()
+        #список дней с установленным статусом
+        #словарь
+        #   ключ - годмесяц(YYYYMM), значение - словарь пар (day,status)
+        self.days = self.db.get_days()
         self.istestmode = istestmode
 
 
@@ -113,6 +117,10 @@ class ScheduleMaker:
         для этого можно завести еще два списка, рабочих и не рабочих дней и функции для управления
         ими пока отбрасываем только субботы, воскресенья
         """
+        month = dit.year * 100 + dit.month
+        if month in self.days:
+            if dit.day in self.days[month]:
+                return self.days[month][dit.day]
         if dit.weekday() == 5 or dit.weekday() == 6:
             return False
         return True
@@ -229,3 +237,30 @@ class ScheduleMaker:
                 self.db.delete_sched(sched_id)
         if check_sched_id in self.schedules:
             self.make_schedule_and_save(check_sched_id)
+
+
+    def set_day_status(self, status, day, schedule_id):
+        """
+        Установить статус дня будний или выходной
+        """
+        now_id, nowday = self.get_now()
+        if not schedule_id:
+            schedule_id = now_id
+        if schedule_id < now_id:
+            return 'err can not to change past'
+        if now_id == schedule_id and nowday.day >= day:
+            return 'err can not to change past'
+        month_statuses = self.days.get(schedule_id, {}).copy()
+        month_statuses[day] = status
+        self.db.update_day_status(status, day, schedule_id)
+        self.days[schedule_id] = month_statuses
+        self.remove_future_update_this(schedule_id)
+
+
+    def show_days_status(self, schedule_id):
+        """Показать установленные статусы дней за указанный месяц"""
+        now_id, nowday = self.get_now()
+        if not schedule_id:
+            schedule_id = now_id
+        return self.days.get(schedule_id,{})
+

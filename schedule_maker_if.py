@@ -83,12 +83,7 @@ def cmd_del_user(login):
     """
     try:
         init_if_need()
-        result = maker.del_user(login)
-        #также снимаем его с будущих дежурств
-        if 'ok' == result:
-            maker.remove_future_update_this(None)
-
-        return result
+        return maker.del_user(login)
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
@@ -174,6 +169,45 @@ def cmd_show_schedule(schedule_id):
         else:
             sched = maker.schedules
         return str(sched)
+    except KeyboardInterrupt:
+        raise
+    except ScheduleException as e:
+        return '{}'
+    except:
+        return '{}'
+
+
+def cmd_set_holyday(day, schedule_id = None):
+    """Пометить день как выходной"""
+    try:
+        init_if_need()
+        return str(maker.set_day_status(False, day, schedule_id))
+    except KeyboardInterrupt:
+        raise
+    except ScheduleException as e:
+        return '{}'
+    except:
+        return '{}'
+
+
+def cmd_set_weekday(day, schedule_id = None):
+    """Пометить день как будний"""
+    try:
+        init_if_need()
+        return str(maker.set_day_status(True, day, schedule_id))
+    except KeyboardInterrupt:
+        raise
+    except ScheduleException as e:
+        return 'err in cmd_set_weekday {}'.format(e.msg)
+    except:
+        return 'err in cmd_set_weekday Unexpected {}'.format(sys.exc_info()[0])
+
+
+def cmd_show_days_status(schedule_id = None):
+    """Выводит список корректировок статуса дня (выходной/будний)"""
+    try:
+        init_if_need()
+        return str(maker.show_days_status(schedule_id))
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:

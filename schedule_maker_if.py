@@ -86,7 +86,7 @@ def cmd_del_user(login):
         result = maker.del_user(login)
         #также снимаем его с будущих дежурств
         if 'ok' == result:
-            maker.remove_future_update_this()
+            maker.remove_future_update_this(None)
 
         return result
     except KeyboardInterrupt:
@@ -97,7 +97,7 @@ def cmd_del_user(login):
         return 'err in cmd_del_user Unexpected {}'.format(sys.exc_info()[0])
 
 
-def cmd_rebuild():
+def cmd_rebuild(schedule_id = None):
     """
     Удаляет будущие расписания и обновляет текущее
 
@@ -105,7 +105,7 @@ def cmd_rebuild():
     """
     try:
         init_if_need()
-        maker.remove_future_update_this()
+        maker.remove_future_update_this(schedule_id)
         return 'ok'
     except KeyboardInterrupt:
         raise

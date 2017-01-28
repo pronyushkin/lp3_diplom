@@ -215,14 +215,17 @@ class ScheduleMaker:
         return 'ok'
 
 
-    def remove_future_update_this(self):
+    def remove_future_update_this(self, check_sched_id):
         """
         Удаление расписаний на будущие месяцы
         Перегенерация текущего если надо
         """
         now_id, nowday = self.get_now()
+        if not check_sched_id:
+            check_sched_id = now_id
+            
         for sched_id in self.schedules:
-            if now_id < sched_id:
+            if check_sched_id < sched_id:
                 self.db.delete_sched(sched_id)
-        if now_id in self.schedules:
-            self.make_schedule_and_save(None)
+        if check_sched_id in self.schedules:
+            self.make_schedule_and_save(check_sched_id)

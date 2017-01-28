@@ -45,18 +45,23 @@ schedule_app = Flask(__name__)
 @schedule_app.route('/', methods=['GET', 'POST'])
 def index():
     date = datetime.date.today()
-#    date = datetime.date(date.year, date.month, 1)
+    date = datetime.date(date.year, 2, 1)
+
+    if str(request.form.get('month_digit')) != 'None':
+        print(request.form.get('month_digit'))
+        schedule_maker_if.cmd_make_schedule(int(request.form.get('month_digit')))
 
     if str(request.form.get('day')) != 'None':
         # sch_day=datetime.datetime(date.year, date.month, int(request.form.get('day'))).date()
         # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
-        schedule_maker_if.cmd_remove_duty_by_day(int(request.form.get('day')))
+        schedule_maker_if.cmd_remove_duty_by_day(int(request.form.get('day')), int(date.strftime("%Y%m")))
 
     schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
     schedule_month = process_month(date)
 
     result = render_template("index.html",
                             month = schedule_month['month'],
+                            month_digit=int(date.strftime("%Y%m")),
                             year = schedule_month['year'],
                             days = schedule_month['days'],
                             schedule_days = schedule_days)
@@ -67,7 +72,9 @@ def useradd():
     useradd_result=schedule_maker_if.cmd_add_user(request.form.get('user'))
     if useradd_result == 'ok':
         display_message='Пользователь {} успешно добавлен'.format(request.form.get('user'))
-        schedule_maker_if.cmd_rebuild()
+        schedule=yaml.load(schedule_maker_if.cmd_make_schedule(int(request.form.get('month'))))
+        # print(type(request.args.get('month')))
+        schedule_maker_if.cmd_rebuild(int(request.form.get('month')))
     else:
         display_message='Ошибка добавления пользователя'
 
@@ -78,7 +85,7 @@ def userdel():
     useradd_result=schedule_maker_if.cmd_del_user(request.form.get('user'))
     if useradd_result == 'ok':
         display_message='Пользователь {} успешно удален'.format(request.form.get('user'))
-        schedule_maker_if.cmd_rebuild()
+        schedule_maker_if.cmd_rebuild(int(request.form.get('month')))
     else:
         display_message='Ошибка удаления пользователя'
 
@@ -93,5 +100,5 @@ def duty():
 
 if __name__ == "__main__":
     setup_locale(sys.platform)
-    schedule_app.run(host='0.0.0.0', port=int("8080"), debug=True)
+    schedule_app.run(host='0.0.0.0', port=8080, debug=True)
 

@@ -92,6 +92,21 @@ def cmd_del_user(login):
         return 'err in cmd_del_user Unexpected {}'.format(sys.exc_info()[0])
 
 
+def cmd_show_user():
+    """
+    Список пользователей
+    """
+    try:
+        init_if_need()
+        return maker.users
+    except KeyboardInterrupt:
+        raise
+    except ScheduleException as e:
+        return []
+    except:
+        return []
+
+
 def cmd_rebuild(schedule_id = None):
     """
     Удаляет будущие расписания и обновляет текущее
@@ -122,13 +137,13 @@ def cmd_try_schedule(schedule_id = None):
     try:
         init_if_need()
         sched = maker.make_schedule(schedule_id)
-        return str(sched[1])
+        return sched[1]
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
-        return '{}'
+        return {}
     except:
-        return '{}'
+        return {}
 
 
 def cmd_make_schedule(schedule_id = None):
@@ -143,13 +158,13 @@ def cmd_make_schedule(schedule_id = None):
     try:
         init_if_need()
         sched_data = maker.make_schedule_and_save(schedule_id)
-        return str(sched_data)
+        return sched_data
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
-        return '{}'
+        return {}
     except:
-        return '{}'
+        return {}
 
 
 def cmd_show_schedule(schedule_id):
@@ -168,33 +183,33 @@ def cmd_show_schedule(schedule_id):
             sched = maker.schedules.get(schedule_id,{})
         else:
             sched = maker.schedules
-        return str(sched)
+        return sched
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
-        return '{}'
+        return {}
     except:
-        return '{}'
+        return {}
 
 
 def cmd_set_holyday(day, schedule_id = None):
     """Пометить день как выходной"""
     try:
         init_if_need()
-        return str(maker.set_day_status(False, day, schedule_id))
+        return maker.set_day_status(False, day, schedule_id)
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
-        return '{}'
+        return {}
     except:
-        return '{}'
+        return {}
 
 
 def cmd_set_weekday(day, schedule_id = None):
     """Пометить день как будний"""
     try:
         init_if_need()
-        return str(maker.set_day_status(True, day, schedule_id))
+        return maker.set_day_status(True, day, schedule_id)
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
@@ -204,20 +219,23 @@ def cmd_set_weekday(day, schedule_id = None):
 
 
 def cmd_show_days_status(schedule_id = None):
-    """Выводит список корректировок статуса дня (выходной/будний)"""
+    """
+    Выводит список корректировок статуса дня (выходной/будний)
+    Выходной помечен как False, будний как True
+    """
     try:
         init_if_need()
-        return str(maker.show_days_status(schedule_id))
+        return maker.show_days_status(schedule_id)
     except KeyboardInterrupt:
         raise
     except ScheduleException as e:
-        return '{}'
+        return {}
     except:
-        return '{}'
+        return {}
 
 
 if __name__ == '__main__':
-    """Минимальное наполнение базы для тестирование с web интерфейсом"""
+    """Минимальное наполнение базы для тестирование с web интерфейсом
     try:
         raise ScheduleException('test exception')
     except ScheduleException as e:
@@ -227,4 +245,6 @@ if __name__ == '__main__':
     for i in range(1,5):
         user='u{}'.format(i)
         print(cmd_add_user(user))
-
+"""
+    cmd_set_holyday(27)
+    cmd_show_days_status()

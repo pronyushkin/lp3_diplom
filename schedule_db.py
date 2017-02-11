@@ -109,9 +109,6 @@ class SchedulesDb:
     def add_user(self, login):
         """Добавление пользователя в базу"""
         try:
-            # sqlalchemy сам экранирует символы
-            # login = login.remove("'")
-            # login = login.remove('"')
             u = User
             check_user = u.query.filter(User.login == login).first()
             if check_user:
@@ -192,8 +189,6 @@ class SchedulesDb:
 
     def update_day_status(self, status, day, schedule_id):
         """Обновить в базе информацию о статусе дня"""
-        return True
-        #TODO check and use it
         try:
             w = Day
             check = w.query.filter(Day.month == schedule_id, Day.day == day).first()
@@ -210,8 +205,6 @@ class SchedulesDb:
             return False
 
     def get_days(self):
-        return {}
-        #TODO check and use it
         """Извлечь из базы информацию о статусах дней"""
         data = self.db_session.query(Day).all()
         result = {}
@@ -219,6 +212,7 @@ class SchedulesDb:
             month = result.get(i.month, {})
             month[i.day] = i.status
             result[i.month] = month
+        return result
 
 # проверки
 def example_users(example_db):
@@ -260,3 +254,7 @@ if __name__ == '__main__':
     example_users(main_db)
     print('-'*80)
     example_schedules(main_db)
+    main_db.update_day_status(False, 8, 201703)
+    main_db.update_day_status(False, 27, 201702)
+    main_db.update_day_status(True, 2, 201702)
+    print(main_db.get_days())

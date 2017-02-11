@@ -162,6 +162,9 @@ class ScheduleMaker:
             if self.is_workday(dit):
                 sch_dates[dit.day] = self.users[user_id % user_lim]
                 user_id += 1
+            else:
+                if dit.day in sch_dates:
+                    del(sch_dates[dit.day])
             dit = (dit + timedelta(days=1))
         return (schedule_id, sch_dates)
 

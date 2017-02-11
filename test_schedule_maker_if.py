@@ -51,7 +51,7 @@ def test_schedule_maker_if_users():
 
     #неуспешная попытка добавления существующего пользователя
     assert('ok' != schm.cmd_add_user('u3'))
-    print('users', schm.maker.users)
+    print('users', schm.cmd_show_user())
 
     #очищаем
     for u in cu:
@@ -84,7 +84,7 @@ def test_schedule_maker_if_sched():
         29: 'u1', 30: 'u2'}
 
     sch1 = schm.cmd_try_schedule(201611)
-    assert(sch1 == str(ctrl1))
+    assert(sch1 == ctrl1)
     assert(sch1 == schm.cmd_make_schedule(201611))
     ctrl2 = {
          1: 'u3',  2: 'u4',
@@ -93,24 +93,35 @@ def test_schedule_maker_if_sched():
         15: 'u1', 16: 'u2', 19: 'u3', 20: 'u4',
         21: 'u1', 22: 'u2', 23: 'u3', 26: 'u4',
         27: 'u1', 28: 'u2', 29: 'u3', 30: 'u4'}
-    assert(str(ctrl2) == schm.cmd_make_schedule(201612))
+    assert(ctrl2 == schm.cmd_make_schedule(201612))
 
     #поскольку выставлен флаг тест сегодня 2016/09/15
     ctrl3 = {
         15: 'u1', 16: 'u2', 19: 'u3', 20: 'u4',
         21: 'u1', 22: 'u2', 23: 'u3', 26: 'u4',
         27: 'u1', 28: 'u2', 29: 'u3', 30: 'u4'}
-    assert(str(ctrl3) == schm.cmd_make_schedule())
+    assert(ctrl3 == schm.cmd_make_schedule())
+    schm.cmd_set_weekday(24, 201609)
+    schm.cmd_set_holyday(26, 201609)
+    ctrl3_1 = {
+        15: 'u1', 16: 'u2', 19: 'u3', 20: 'u4',
+        21: 'u1', 22: 'u2', 23: 'u3', 24: 'u4',
+        27: 'u1', 28: 'u2', 29: 'u3', 30: 'u4'}
+    rtrl3_1 = schm.cmd_make_schedule()
+    assert(ctrl3_1 == rtrl3_1)
+    schm.cmd_set_weekday(26, 201609)
+    schm.cmd_set_holyday(24, 201609)
+    assert(ctrl3 == schm.cmd_make_schedule())
     assert('ok' == schm.cmd_remove_duty_by_day(19))
     ctrl4 = {
         15: 'u1', 16: 'u2',           19: 'u4',
         20: 'u1', 21: 'u2', 22: 'u3', 23: 'u4',
         26: 'u1', 27: 'u2', 28: 'u3', 29: 'u4',
         30: 'u1'}
-    assert(str(ctrl4) == schm.cmd_show_schedule(201609))
+    assert(ctrl4 == schm.cmd_show_schedule(201609))
     assert('ok' != schm.cmd_remove_duty_by_day(14))
 
-    assert(str({}) == schm.cmd_show_schedule(201710))
+    assert({} == schm.cmd_show_schedule(201710))
 
     #печать имеющихся расписаний
     print('showAll', schm.cmd_show_schedule(None))
@@ -123,7 +134,7 @@ def test_schedule_maker_if_sched():
     for u in cu:
         if 1 == len(cu):
             #убеждаемся что при удалении пользователей обновляется расписание
-            assert(str(ctrl5) == schm.cmd_show_schedule(201609))
+            assert(ctrl5 == schm.cmd_show_schedule(201609))
         #удаляем пользователя
         assert('ok' == schm.cmd_del_user(u))
 

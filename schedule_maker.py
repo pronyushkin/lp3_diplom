@@ -82,7 +82,7 @@ class ScheduleMaker:
                 if checkday not in prev.keys():
                     break
                 if prev[checkday] in self.users:
-                    last_user = prev[today - 1]
+                    last_user = prev[checkday]
                     break
                 checkday -= 1
         return last_user
@@ -113,9 +113,6 @@ class ScheduleMaker:
     def is_workday(self, dit):
         """
         Определить является ли дата рабочим днем
-        TODO добавить возможность настройки дополнительных рабочих и не рабочих дней
-        для этого можно завести еще два списка, рабочих и не рабочих дней и функции для управления
-        ими пока отбрасываем только субботы, воскресенья
         """
         month = dit.year * 100 + dit.month
         if month in self.days:

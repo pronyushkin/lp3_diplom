@@ -1,4 +1,5 @@
-<p>Снять пользователя {{user}} с дежурства {{day}}?</p>
+<p>Снять пользователя {{user}} с дежурства {{month_digit}}{{day}}?</p>
 <form class="navbar-form navbar-right" action="/" method="POST">
     <button type="submit" class="btn btn-default" name="day" value={{day}}>Да</button>
+    <input type="hidden" name=month_cur value={{month_digit}}>
 </form>

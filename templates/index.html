@@ -47,19 +47,30 @@
                     </th>
                     <th>
                         <form class="navbar-form navbar-right" action="/" method="POST">
-                            <button type="submit" class="btn btn-default" name="month_digit" value={{month_digit}}>Запланировать дежурства</button>
+                            <button type="submit" class="btn btn-default" name="month_schedule" value={{month_digit}}>Запланировать дежурства</button>
+                            <input type="hidden" name=month_cur value={{month_digit}}>
                         </form>
                     </th>
                 </tr>
                 <tr>
                     <table class="table-condensed table-bordered table-striped">
-                        <thead>
+<!--                        <thead> -->
                             <tr>
-                              <th colspan="14" >
-                                <a class="btn"><i class="icon-chevron-left"></i></a>
-                                <a class="btn">{{month}} {{year}}</a>
-                                <a class="btn"><i class="icon-chevron-right"></i></a>
-                              </th>
+                                <th>
+                                <form action="/" method="POST">
+                                    <button type="submit" class="btn btn-default" name="month_prev" value={{month_prev}}><</button>
+                                    <input type="hidden" name=month_cur value={{month_digit}}>
+                                </form>
+                                </th>
+                                <th>
+                                {{month}} {{year}}
+                                </th>
+                                <th>
+                                <form action="/" method="POST">
+                                    <button type="submit" class="btn btn-default" name="month_next" value={{month_next}}>></button>
+                                    <input type="hidden" name=month_cur value={{month_digit}}>
+                                </form>
+                                </th>
                             </tr>
                             <tr>
                                 <th>Пн</th>
@@ -70,14 +81,14 @@
                                 <th>Сб</th>
                                 <th>Вс</th>
                             </tr>
-                        </thead>
+<!--                        </thead> -->
                         <tbody>
                         {% for week in days %}
                             <tr>
                             {% for day in week %}
                                 <td>
                                     <p>{{day}}</p>
-                                    <p><a class="btn" href="/duty?day={{day}}&user={{schedule_days[day]}}">{{schedule_days[day]}}</a></p>
+                                    <p><a class="btn" href="/duty?day={{day}}&month={{month_digit}}&user={{schedule_days[day]}}">{{schedule_days[day]}}</a></p>
                                 </td>
                             {% endfor %}
                             </tr>

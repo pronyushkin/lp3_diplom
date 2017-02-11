@@ -1,6 +1,7 @@
 import sys
 from flask import Flask, render_template, request
 import datetime
+from dateutil.relativedelta import relativedelta
 from calendar import Calendar
 import yaml
 import locale
@@ -44,12 +45,22 @@ schedule_app = Flask(__name__)
 
 @schedule_app.route('/', methods=['GET', 'POST'])
 def index():
-    date = datetime.date.today()
-    date = datetime.date(date.year, 2, 1)
 
-    if str(request.form.get('month_digit')) != 'None':
-        print(request.form.get('month_digit'))
-        schedule_maker_if.cmd_make_schedule(int(request.form.get('month_digit')))
+    if str(request.form.get('month_cur')) != 'None':
+        date = datetime.date(year=int(request.form.get('month_cur'))//100, month=int(request.form.get('month_cur'))%100, day=1)
+    else: 
+        date = datetime.date.today()
+        #date = datetime.date(date.year, 2, 1)
+
+    if str(request.form.get('month_next')) != 'None':
+        date = date + relativedelta(months=1)
+    elif str(request.form.get('month_prev')) != 'None':
+        date = date - relativedelta(months=1)
+        
+
+    if str(request.form.get('month_schedule')) != 'None':
+        print(request.form.get('month_schedule'))
+        schedule_maker_if.cmd_make_schedule(int(request.form.get('month_schedule')))
 
     if str(request.form.get('day')) != 'None':
         # sch_day=datetime.datetime(date.year, date.month, int(request.form.get('day'))).date()
@@ -85,6 +96,7 @@ def userdel():
     useradd_result=schedule_maker_if.cmd_del_user(request.form.get('user'))
     if useradd_result == 'ok':
         display_message='Пользователь {} успешно удален'.format(request.form.get('user'))
+        print(request.args.get('month'))
         schedule_maker_if.cmd_rebuild(int(request.form.get('month')))
     else:
         display_message='Ошибка удаления пользователя'
@@ -94,9 +106,10 @@ def userdel():
 @schedule_app.route('/duty', methods=['GET', 'POST'])
 def duty():
     day = request.args.get('day')
+    month_digit= request.args.get('month')
     user = request.args.get('user')
 
-    return render_template('dutyremove.html', day=day, user=user)
+    return render_template('dutyremove.html', day=day, month_digit=month_digit, user=user)
 
 if __name__ == "__main__":
     setup_locale(sys.platform)

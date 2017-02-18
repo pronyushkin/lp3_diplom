@@ -3,7 +3,7 @@ from flask import Flask, render_template, request
 import datetime
 from dateutil.relativedelta import relativedelta
 from calendar import Calendar
-import yaml
+# import yaml
 import locale
 import schedule_maker_if
 
@@ -67,41 +67,46 @@ def index():
         # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
         schedule_maker_if.cmd_remove_duty_by_day(int(request.form.get('day')), int(date.strftime("%Y%m")))
 
-    schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
+    # schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
+    schedule_days = schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m")))
     schedule_month = process_month(date)
+    schedule_users = schedule_maker_if.cmd_show_user()
 
     result = render_template("index.html",
                             month = schedule_month['month'],
                             month_digit=int(date.strftime("%Y%m")),
                             year = schedule_month['year'],
                             days = schedule_month['days'],
-                            schedule_days = schedule_days)
+                            schedule_days = schedule_days,
+                            schedule_users = schedule_users)
     return result
 
 @schedule_app.route('/useradd', methods=['GET', 'POST'])
 def useradd():
     useradd_result=schedule_maker_if.cmd_add_user(request.form.get('user'))
+    month_digit=request.form.get('month_cur')
     if useradd_result == 'ok':
         display_message='Пользователь {} успешно добавлен'.format(request.form.get('user'))
-        schedule=yaml.load(schedule_maker_if.cmd_make_schedule(int(request.form.get('month'))))
+        schedule=schedule_maker_if.cmd_make_schedule(int(request.form.get('month_cur')))
         # print(type(request.args.get('month')))
-        schedule_maker_if.cmd_rebuild(int(request.form.get('month')))
+        schedule_maker_if.cmd_rebuild(int(request.form.get('month_cur')))
     else:
         display_message='Ошибка добавления пользователя'
 
-    return render_template('user.html', message=display_message)
+    return render_template('user.html', message=display_message, month_digit=month_digit)
 
 @schedule_app.route('/userdel', methods=['GET', 'POST'])
 def userdel():
     useradd_result=schedule_maker_if.cmd_del_user(request.form.get('user'))
+    month_digit=request.form.get('month_cur')
     if useradd_result == 'ok':
         display_message='Пользователь {} успешно удален'.format(request.form.get('user'))
-        print(request.args.get('month'))
-        schedule_maker_if.cmd_rebuild(int(request.form.get('month')))
+        print(request.args.get('month_cur'))
+        schedule_maker_if.cmd_rebuild(int(request.form.get('month_cur')))
     else:
         display_message='Ошибка удаления пользователя'
 
-    return render_template('user.html', message=display_message)
+    return render_template('user.html', message=display_message, month_digit=month_digit)
 
 @schedule_app.route('/duty', methods=['GET', 'POST'])
 def duty():

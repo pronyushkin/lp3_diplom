@@ -67,6 +67,11 @@ def index():
         # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
         schedule_maker_if.cmd_remove_duty_by_day(int(request.form.get('day')), int(date.strftime("%Y%m")))
 
+    if str(request.form.get('holyday')) != 'None':
+        # sch_day=datetime.datetime(date.year, date.month, int(request.form.get('day'))).date()
+        # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
+        schedule_maker_if.cmd_set_holyday(int(request.form.get('holyday')), int(date.strftime("%Y%m")))
+
     # schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
     schedule_days = schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m")))
     schedule_month = process_month(date)
@@ -115,6 +120,13 @@ def duty():
     user = request.args.get('user')
 
     return render_template('dutyremove.html', day=day, month_digit=month_digit, user=user)
+
+@schedule_app.route('/day', methods=['GET', 'POST'])
+def holyday():
+    day = request.args.get('day')
+    month_digit= request.args.get('month')
+
+    return render_template('day.html', day=day, month_digit=month_digit)
 
 if __name__ == "__main__":
     setup_locale(sys.platform)

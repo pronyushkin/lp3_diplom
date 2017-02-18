@@ -76,7 +76,8 @@
                             <tr>
                             {% for day in week %}
                                 <td>
-                                    {{day}}
+<!--                                    {{day}} -->
+                                    <p><a class="btn" href="/day?day={{day}}&month={{month_digit}}">{{day}}</a></p>
                                     <p><a class="btn" href="/duty?day={{day}}&month={{month_digit}}&user={{schedule_days[day]}}">{{schedule_days[day]}}</a></p>
                                 </td>
                             {% endfor %}

@@ -1,5 +1,7 @@
-<p>Отметить день {{month_digit}}{{day}} как выходной?</p>
+<p>Отметить день {{month_digit}}{{day}} как:</p>
 <form class="navbar-form navbar-right" action="/" method="POST">
-    <button type="submit" class="btn btn-default" name="holyday" value={{day}}>Да</button>
+    <button type="submit" class="btn btn-default" name="setday" value="holyday">Выходной</button>
+    <button type="submit" class="btn btn-default" name="setday" value="workday">Рабочий</button>
+    <input type="hidden" name=day value={{day}}>
     <input type="hidden" name=month_cur value={{month_digit}}>
 </form>

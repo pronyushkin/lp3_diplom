@@ -67,10 +67,12 @@ def index():
         # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
         schedule_maker_if.cmd_remove_duty_by_day(int(request.form.get('day')), int(date.strftime("%Y%m")))
 
-    if str(request.form.get('holyday')) != 'None':
+    if str(request.form.get('setday')) == 'holyday':
         # sch_day=datetime.datetime(date.year, date.month, int(request.form.get('day'))).date()
         # schedule_maker_if.cmd_remove_duty_by_day(sch_day)
-        schedule_maker_if.cmd_set_holyday(int(request.form.get('holyday')), int(date.strftime("%Y%m")))
+        schedule_maker_if.cmd_set_holyday(int(request.form.get('day')), int(date.strftime("%Y%m")))
+    elif str(request.form.get('setday')) == 'workday':
+        schedule_maker_if.cmd_set_weekday(int(request.form.get('day')), int(date.strftime("%Y%m")))
 
     # schedule_days=yaml.load(schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m"))))
     schedule_days = schedule_maker_if.cmd_show_schedule(int(date.strftime("%Y%m")))
